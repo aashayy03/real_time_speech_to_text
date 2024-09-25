@@ -25,8 +25,10 @@ def transcribe_audio(buffer: queue.Queue, model, processor) -> None:
     try:
         while True:
             audio = buffer.get(timeout = TIMEOUT_secs)
-            inputs = processor(audio, sampling_rate = SAMPLE_RATE, return_tensors = 'pt', padding = 'longest').input_values
-            logits = model(inputs).logits
+            inputs = processor(audio, sampling_rate = SAMPLE_RATE, return_tensors = 'pt', padding = True).input_values
+            with torch.no_grad():
+                logits = model(inputs).logits
+
             tokens = torch.argmax(logits, dim= -1)
             text = processor.batch_decode(tokens)[0]
             print(str(text).lower())
